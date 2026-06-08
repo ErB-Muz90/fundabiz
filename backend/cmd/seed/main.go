@@ -101,17 +101,17 @@ func seedCounties(ctx context.Context, pool *pgxpool.Pool) {
 }
 
 func seedSuperAdmin(ctx context.Context, pool *pgxpool.Pool, cfg *config.Config) {
-	hash, err := bcrypt.GenerateFromPassword([]byte("admin123"), bcrypt.DefaultCost)
+	hash, err := bcrypt.GenerateFromPassword([]byte("Admin123!"), bcrypt.DefaultCost)
 	if err != nil {
 		log.Fatalf("hash password: %v", err)
 	}
 
 	id := uuid.New().String()
-	query := `INSERT INTO users (id, email, phone, password_hash, role, county_id, business_name, active, created_at, updated_at)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) ON CONFLICT (email) DO NOTHING`
+	query := `INSERT INTO users (id, email, phone, password_hash, role, county_id, business_name, status, created_at, updated_at)
+		VALUES ($1, $2, $3, $4, $5, (SELECT id FROM counties WHERE code = $6), $7, $8, $9, $10) ON CONFLICT (email) DO NOTHING`
 	_, err = pool.Exec(ctx, query,
 		id, "admin@fundabiz.co.ke", "254700000000", string(hash),
-		"SUPER_ADMIN", "047", "FundaBiz Admin", true, time.Now(), time.Now(),
+		"SUPER_ADMIN", "047", "FundaBiz Admin", "ACTIVE", time.Now(), time.Now(),
 	)
 	if err != nil {
 		log.Printf("seed super admin: %v", err)
@@ -139,10 +139,10 @@ func seedDevData(ctx context.Context, pool *pgxpool.Pool) {
 
 	for _, u := range users {
 		id := uuid.New().String()
-		query := `INSERT INTO users (id, email, phone, password_hash, role, county_id, business_name, active, created_at, updated_at)
-			VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) ON CONFLICT (email) DO NOTHING`
+		query := `INSERT INTO users (id, email, phone, password_hash, role, county_id, business_name, status, created_at, updated_at)
+			VALUES ($1, $2, $3, $4, $5, (SELECT id FROM counties WHERE code = $6), $7, $8, $9, $10) ON CONFLICT (email) DO NOTHING`
 		_, err := pool.Exec(ctx, query,
-			id, u.Email, u.Phone, string(hash), u.Role, u.CountyID, u.BusinessName, true, time.Now(), time.Now(),
+			id, u.Email, u.Phone, string(hash), u.Role, u.CountyID, u.BusinessName, "ACTIVE", time.Now(), time.Now(),
 		)
 		if err != nil {
 			log.Printf("seed user %s: %v", u.Email, err)
