@@ -62,7 +62,7 @@ func main() {
 	api.Post("/password/reset/initiate", handler.InitiatePasswordReset)
 	api.Post("/password/reset", handler.ResetPassword)
 
-	protected := api.Group("", auth.AuthRequired)
+	protected := api.Group("", auth.AuthRequired(auth.NewSessionStore(rdb)))
 
 	protected.Get("/me", handler.Me)
 	protected.Post("/logout", handler.Logout)

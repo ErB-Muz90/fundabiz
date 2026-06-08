@@ -7,26 +7,36 @@ import (
 	"github.com/coreflex/fundabiz/internal/shared/types"
 )
 
-func AuthRequired(c *fiber.Ctx) error {
-	authHeader := c.Get("Authorization")
-	if authHeader == "" {
-		return c.Status(401).JSON(fiber.Map{"error": "authorization header required"})
-	}
+func AuthRequired(sessions *SessionStore) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		authHeader := c.Get("Authorization")
+		if authHeader == "" {
+			return c.Status(401).JSON(fiber.Map{"error": "authorization header required"})
+		}
 
-	parts := strings.SplitN(authHeader, " ", 2)
-	if len(parts) != 2 || strings.ToLower(parts[0]) != "bearer" {
-		return c.Status(401).JSON(fiber.Map{"error": "invalid authorization header"})
-	}
+		parts := strings.SplitN(authHeader, " ", 2)
+		if len(parts) != 2 || strings.ToLower(parts[0]) != "bearer" {
+			return c.Status(401).JSON(fiber.Map{"error": "invalid authorization header"})
+		}
 
-	claims, err := ValidateAccessToken(parts[1])
-	if err != nil {
-		return c.Status(401).JSON(fiber.Map{"error": "invalid or expired access token"})
-	}
+		claims, err := ValidateAccessToken(parts[1])
+		if err != nil {
+			return c.Status(401).JSON(fiber.Map{"error": "invalid or expired access token"})
+		}
 
-	c.Locals("claims", claims)
-	c.Locals("user_id", claims.UserID)
-	c.Locals("role", claims.Role)
-	return c.Next()
+		// A valid signature is not enough: the session must still be live in
+		// Redis. This is what makes logout, RevokeSession and SuspendUser take
+		// effect immediately instead of after the access token's TTL.
+		if ok, err := sessions.Exists(c.Context(), claims.SessionID); err != nil || !ok {
+			return c.Status(401).JSON(fiber.Map{"error": "session revoked or expired"})
+		}
+
+		c.Locals("claims", claims)
+		c.Locals("user_id", claims.UserID)
+		c.Locals("role", claims.Role)
+		c.Locals("session_id", claims.SessionID)
+		return c.Next()
+	}
 }
 
 func RoleRequired(roles ...types.Role) fiber.Handler {

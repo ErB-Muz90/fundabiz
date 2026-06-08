@@ -108,6 +108,17 @@ func (s *SessionStore) Rotate(ctx context.Context, oldRefreshToken string, ua, i
 	return newSession, nil
 }
 
+func (s *SessionStore) Exists(ctx context.Context, sessionID string) (bool, error) {
+	if sessionID == "" {
+		return false, nil
+	}
+	n, err := s.rdb.Exists(ctx, fmt.Sprintf("session:%s", sessionID)).Result()
+	if err != nil {
+		return false, err
+	}
+	return n > 0, nil
+}
+
 func (s *SessionStore) Revoke(ctx context.Context, sessionID string) error {
 	data, err := s.rdb.Get(ctx, fmt.Sprintf("session:%s", sessionID)).Bytes()
 	if err != nil {
