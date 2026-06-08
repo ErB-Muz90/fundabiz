@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: kyc
+  namespace: fundabiz
+  labels:
+    app: kyc
+spec:
+  type: ClusterIP
+  selector:
+    app: kyc
+  ports:
+    - port: 4006
+      targetPort: 4006
+      protocol: TCP
+      name: http

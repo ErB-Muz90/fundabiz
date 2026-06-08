@@ -1,0 +1,2 @@
+DROP TABLE IF EXISTS loan_tranches;
+DROP TABLE IF EXISTS loans;

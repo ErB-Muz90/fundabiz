@@ -1,0 +1,7 @@
+DROP TABLE IF EXISTS otp_attempts;
+DROP TABLE IF EXISTS audit_logs;
+
+ALTER TABLE users DROP COLUMN IF EXISTS first_name;
+ALTER TABLE users DROP COLUMN IF EXISTS last_name;
+ALTER TABLE users DROP COLUMN IF EXISTS national_id;
+ALTER TABLE users DROP COLUMN IF EXISTS mfa_verified;

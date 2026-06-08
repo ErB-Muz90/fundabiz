@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: loan
+  namespace: fundabiz
+  labels:
+    app: loan
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: loan
+  template:
+    metadata:
+      labels:
+        app: loan
+    spec:
+      containers:
+        - name: loan
+          image: fundabiz/loan:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 4002
+              protocol: TCP
+          envFrom:
+            - secretRef:
+                name: fundabiz-secrets
+          resources:
+            requests:
+              cpu: 100m
+              memory: 64Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+          livenessProbe:
+            httpGet:
+              path: /loans
+              port: 4002
+            initialDelaySeconds: 15
+            periodSeconds: 20
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /loans
+              port: 4002
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 2

@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: escrow
+  namespace: fundabiz
+  labels:
+    app: escrow
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: escrow
+  template:
+    metadata:
+      labels:
+        app: escrow
+    spec:
+      containers:
+        - name: escrow
+          image: fundabiz/escrow:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 4003
+              protocol: TCP
+          envFrom:
+            - secretRef:
+                name: fundabiz-secrets
+          resources:
+            requests:
+              cpu: 100m
+              memory: 64Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+          livenessProbe:
+            httpGet:
+              path: /escrow
+              port: 4003
+            initialDelaySeconds: 15
+            periodSeconds: 20
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /escrow
+              port: 4003
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 2

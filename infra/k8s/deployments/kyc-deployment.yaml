@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kyc
+  namespace: fundabiz
+  labels:
+    app: kyc
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kyc
+  template:
+    metadata:
+      labels:
+        app: kyc
+    spec:
+      containers:
+        - name: kyc
+          image: fundabiz/kyc:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 4006
+              protocol: TCP
+          envFrom:
+            - secretRef:
+                name: fundabiz-secrets
+          resources:
+            requests:
+              cpu: 100m
+              memory: 64Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+          livenessProbe:
+            httpGet:
+              path: /kyc/applications
+              port: 4006
+            initialDelaySeconds: 15
+            periodSeconds: 20
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /kyc/applications
+              port: 4006
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 2

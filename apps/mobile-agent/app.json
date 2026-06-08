@@ -1,0 +1,43 @@
+{
+  "expo": {
+    "name": "FundaBiz Agent",
+    "slug": "fundabiz-agent",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#1a73e8"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.fundabiz.agent"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#1a73e8"
+      },
+      "package": "com.fundabiz.agent"
+    },
+    "plugins": [
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "FundaBiz needs access to your camera to capture KYC documents."
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "FundaBiz needs your location to tag submission premises."
+        }
+      ],
+      "expo-secure-store",
+      "expo-router"
+    ]
+  }
+}

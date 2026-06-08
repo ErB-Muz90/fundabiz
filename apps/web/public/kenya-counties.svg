@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 600" fill="none">
+  <rect width="500" height="600" fill="#f9fafb"/>
+  <g transform="translate(250, 50)">
+    <!-- Simple stylized Kenya map outline -->
+    <path d="M-40 80 L-60 100 L-50 130 L-30 140 L10 135 L40 145 L60 130 L55 100 L40 85 L20 90 L0 85 L-20 80 Z" fill="#059669" opacity="0.3" stroke="#059669" stroke-width="1"/>
+    <path d="M-60 100 L-80 120 L-90 150 L-70 170 L-40 175 L-30 160 L-50 130 Z" fill="#059669" opacity="0.3" stroke="#059669" stroke-width="1"/>
+    <path d="M10 135 L40 145 L60 130 L80 140 L95 130 L90 110 L75 95 L55 100 Z" fill="#059669" opacity="0.3" stroke="#059669" stroke-width="1"/>
+    <path d="M-30 140 L-40 175 L-30 190 L-10 185 L10 175 L30 180 L40 165 L40 145 Z" fill="#059669" opacity="0.3" stroke="#059669" stroke-width="1"/>
+    <path d="M-10 185 L-30 190 L-40 210 L-30 230 L-10 240 L10 235 L20 215 L10 190 Z" fill="#059669" opacity="0.3" stroke="#059669" stroke-width="1"/>
+    <path d="M30 180 L40 165 L60 170 L70 185 L50 200 L30 195 Z" fill="#059669" opacity="0.3" stroke="#059669" stroke-width="1"/>
+    <path d="M10 235 L-10 240 L-20 260 L-5 275 L15 270 L25 250 Z" fill="#059669" opacity="0.3" stroke="#059669" stroke-width="1"/>
+    <path d="M-20 260 L-40 270 L-45 290 L-30 305 L-10 295 L-5 275 Z" fill="#059669" opacity="0.3" stroke="#059669" stroke-width="1"/>
+    <text x="-20" y="340" font-family="Inter" font-size="10" fill="#059669" text-anchor="middle" font-weight="600">KENYA</text>
+    <text x="-20" y="355" font-family="Inter" font-size="8" fill="#9ca3af" text-anchor="middle">47 Counties</text>
+  </g>
+  <!-- Legend -->
+  <g transform="translate(10, 560)">
+    <rect x="0" y="0" width="12" height="12" rx="2" fill="#059669" opacity="0.2"/>
+    <text x="16" y="10" font-family="Inter" font-size="8" fill="#6b7280">Low</text>
+    <rect x="60" y="0" width="12" height="12" rx="2" fill="#059669" opacity="0.4"/>
+    <text x="100" y="10" font-family="Inter" font-size="8" fill="#6b7280">High</text>
+  </g>
+</svg>

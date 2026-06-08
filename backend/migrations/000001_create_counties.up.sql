@@ -1,0 +1,7 @@
+CREATE TABLE IF NOT EXISTS counties (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    code VARCHAR(10) UNIQUE NOT NULL,
+    name VARCHAR(100) NOT NULL,
+    region VARCHAR(50),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);

@@ -1,0 +1,277 @@
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: 10m
+    max-file: 3
+
+services:
+  # ─── Infra ──────────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: fundabiz_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "5444:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB} || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    logging: *default-logging
+
+  redis:
+    image: redis:7-alpine
+    container_name: fundabiz_redis
+    restart: unless-stopped
+    command: redis-server --requirepass ${REDIS_PASSWORD} --maxmemory 512mb --maxmemory-policy allkeys-lru
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    logging: *default-logging
+
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    container_name: fundabiz_rabbitmq
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmqdata:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    logging: *default-logging
+
+  pgbouncer:
+    image: edoburu/pgbouncer:latest
+    container_name: fundabiz_pgbouncer
+    restart: unless-stopped
+    environment:
+      DB_USER: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      DB_HOST: postgres
+      DB_NAME: ${POSTGRES_DB}
+      POOL_MODE: transaction
+      MAX_CLIENT_CONN: 1000
+      DEFAULT_POOL_SIZE: 20
+    ports:
+      - "6432:5432"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    logging: *default-logging
+
+  # ─── Backend Services ───────────────────────────────────
+  gateway:
+    build:
+      context: ./backend
+      dockerfile: ../infra/docker/Dockerfile.gateway
+    container_name: fundabiz_gateway
+    ports:
+      - "4000:4000"
+    env_file: .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    logging: *default-logging
+
+  auth:
+    build:
+      context: ./backend
+      dockerfile: ../infra/docker/Dockerfile.auth
+    container_name: fundabiz_auth
+    ports:
+      - "4001:4001"
+    env_file: .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    logging: *default-logging
+
+  loan:
+    build:
+      context: ./backend
+      dockerfile: ../infra/docker/Dockerfile.loan
+    container_name: fundabiz_loan
+    ports:
+      - "4002:4002"
+    env_file: .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    logging: *default-logging
+
+  escrow:
+    build:
+      context: ./backend
+      dockerfile: ../infra/docker/Dockerfile.escrow
+    container_name: fundabiz_escrow
+    ports:
+      - "4003:4003"
+    env_file: .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    logging: *default-logging
+
+  wallet:
+    build:
+      context: ./backend
+      dockerfile: ../infra/docker/Dockerfile.wallet
+    container_name: fundabiz_wallet
+    ports:
+      - "4004:4004"
+    env_file: .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+    logging: *default-logging
+
+  mpesa:
+    build:
+      context: ./backend
+      dockerfile: ../infra/docker/Dockerfile.mpesa
+    container_name: fundabiz_mpesa
+    ports:
+      - "4005:4005"
+    env_file: .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    logging: *default-logging
+
+  kyc:
+    build:
+      context: ./backend
+      dockerfile: ../infra/docker/Dockerfile.kyc
+    container_name: fundabiz_kyc
+    ports:
+      - "4006:4006"
+    env_file: .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    logging: *default-logging
+
+  fraud:
+    build:
+      context: ./backend
+      dockerfile: ../infra/docker/Dockerfile.fraud
+    container_name: fundabiz_fraud
+    ports:
+      - "4007:4007"
+    env_file: .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    logging: *default-logging
+
+  notification:
+    build:
+      context: ./backend
+      dockerfile: ../infra/docker/Dockerfile.notification
+    container_name: fundabiz_notification
+    ports:
+      - "4008:4008"
+    env_file: .env
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    logging: *default-logging
+
+  repayment:
+    build:
+      context: ./backend
+      dockerfile: ../infra/docker/Dockerfile.repayment
+    container_name: fundabiz_repayment
+    ports:
+      - "4009:4009"
+    env_file: .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    logging: *default-logging
+
+  tracking:
+    build:
+      context: ./backend
+      dockerfile: ../infra/docker/Dockerfile.tracking
+    container_name: fundabiz_tracking
+    ports:
+      - "4010:4010"
+    env_file: .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    logging: *default-logging
+
+  ussd:
+    build:
+      context: ./backend
+      dockerfile: ../infra/docker/Dockerfile.ussd
+    container_name: fundabiz_ussd
+    ports:
+      - "4011:4011"
+    env_file: .env
+    depends_on:
+      redis:
+        condition: service_healthy
+    logging: *default-logging
+
+  # ─── Frontend ───────────────────────────────────────────
+  web:
+    build:
+      context: ./apps/web
+      dockerfile: ../../infra/docker/Dockerfile.web
+    container_name: fundabiz_web
+    ports:
+      - "3000:3000"
+    env_file: .env
+    depends_on:
+      - gateway
+    logging: *default-logging
+
+volumes:
+  pgdata:
+  redisdata:
+  rabbitmqdata:

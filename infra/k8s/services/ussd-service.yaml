@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ussd
+  namespace: fundabiz
+  labels:
+    app: ussd
+spec:
+  type: ClusterIP
+  selector:
+    app: ussd
+  ports:
+    - port: 4011
+      targetPort: 4011
+      protocol: TCP
+      name: http
